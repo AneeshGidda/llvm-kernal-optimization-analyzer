@@ -1,0 +1,60 @@
+# Build
+build/
+out/
+cmake-build-*/
+*.user
+*.suo
+*.sln.docstates
+
+# IDE
+.idea/
+.vscode/
+*.swp
+*.swo
+*~
+
+# CMake
+CMakeCache.txt
+CMakeFiles/
+cmake_install.cmake
+Makefile
+*.cmake
+!CMakeLists.txt
+
+# Compiler
+*.o
+*.obj
+*.lo
+*.a
+*.lib
+*.so
+*.dylib
+*.dll
+*.exe
+
+# LLVM / Clang
+*.bc
+*.ll
+!test/fixtures/**/*.bc
+!test/fixtures/**/*.ll
+!examples/**/*.ll
+!examples/**/*.bc
+
+# Tests
+Testing/
+CTestTestfile.cmake
+*.log
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Local env
+.env
+.env.local
+*.local
+
+# Generated reports (keep examples in repo)
+/reports/
+*.json
+!docs/sample-output.json
