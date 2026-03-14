@@ -1,0 +1,30 @@
+name: Test
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Install LLVM
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y llvm-15-dev libclang-15-dev clang-15
+
+      - name: Configure and build
+        run: |
+          mkdir build && cd build
+          cmake -DLLVM_DIR=/usr/lib/llvm-15/lib/cmake/llvm ..
+          cmake --build .
+        env:
+          CC: clang-15
+          CXX: clang++-15
+
+      - name: CTest
+        run: cd build && ctest --output-on-failure

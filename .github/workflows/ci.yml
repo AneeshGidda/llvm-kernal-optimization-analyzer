@@ -1,0 +1,32 @@
+name: CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Install LLVM
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y llvm-15-dev libclang-15-dev clang-15
+
+      - name: Configure
+        run: |
+          mkdir build && cd build
+          cmake -DLLVM_DIR=/usr/lib/llvm-15/lib/cmake/llvm ..
+        env:
+          CC: clang-15
+          CXX: clang++-15
+
+      - name: Build
+        run: cmake --build build
+
+      - name: Run analyzer --help
+        run: ./build/analyzer --help
