@@ -33,11 +33,37 @@ cmake ..
 cmake --build .
 ```
 
-Run the analyzer (placeholder for now):
+The executable is `./analyzer` (or `analyzer.exe` on Windows).
+
+### Run
+
+Analyze an LLVM IR (`.ll`) or bitcode (`.bc`) file:
+
+```bash
+./analyzer path/to/file.ll
+```
+
+**Options:**
+
+| Option | Description |
+|--------|-------------|
+| `-h`, `--help` | Show usage and exit |
+| `--all` | Analyze all functions (default: kernel-like only) |
+| `-f`, `--function NAME` | Analyze only the named function |
+| `-v`, `--verbose` | Extra detail in diagnostics |
+| `--json` | Emit a JSON report instead of terminal output |
+
+**Examples** (from the `build` directory):
 
 ```bash
 ./analyzer --help
+./analyzer ../test/fixtures/ir/simple.ll
+./analyzer --all ../test/fixtures/ir/redundant_load.ll
+./analyzer --json ../test/fixtures/ir/matmul.ll
+./analyzer -f kernel_like ../test/fixtures/ir/simple.ll
 ```
+
+Terminal output includes a summary, per-function diagnostics (with evidence and suggestions), and loop context where relevant. Use `--json` for scripting or tooling.
 
 ### Using a custom LLVM install
 
