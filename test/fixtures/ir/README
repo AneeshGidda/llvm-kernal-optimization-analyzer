@@ -1,0 +1,25 @@
+# IR Fixtures
+
+LLVM IR test fixtures for the analyzer. Used by integration tests to validate diagnostic behavior.
+
+## Fixtures
+
+| File | Purpose |
+|------|--------|
+| **simple.ll** | Minimal IR: `add`, `kernel_like` (single loop with phi, GEP, load, reduction). General loader/inventory tests. |
+| **matmul.ll** | Generated from `examples/kernels/matmul/matmul.cpp` via `clang -S -emit-llvm -O1`. Nested loops, GEP-based access; loop context, memory (strided/contiguous), vectorization. |
+| **reduction.ll** | Generated from `examples/kernels/reduction/reduction.cpp` via `clang -S -emit-llvm -O1`. Single loop, phi accumulation; reduction-like vectorization finding, loop-invariant/redundant patterns. |
+| **branch_heavy.ll** | Hand-written. Loop with multiple conditional branches in body; triggers "likely blocked" vectorization and control-flow evidence. |
+| **stencil_like.ll** | Hand-written. Multiple loads per iteration from same/neighboring bases; memory density and reuse/redundant-load. |
+| **redundant_load.ll** | Hand-written. Two loads from same pointer in same block; loop-invariant load in second function. For RedundantLoadAnalyzer. |
+
+## Regenerating matmul.ll / reduction.ll
+
+From repo root:
+
+```bash
+clang -S -emit-llvm -O1 -o test/fixtures/ir/matmul.ll examples/kernels/matmul/matmul.cpp
+clang -S -emit-llvm -O1 -o test/fixtures/ir/reduction.ll examples/kernels/reduction/reduction.cpp
+```
+
+Output is target-dependent; committed fixtures are for stability. Regenerate when upgrading compilers or changing example sources.
