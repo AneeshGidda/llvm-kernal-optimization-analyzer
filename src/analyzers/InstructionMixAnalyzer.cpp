@@ -44,26 +44,33 @@ void InstructionMixAnalyzer::run(llvm::Function& F, AnalysisContext& ctx) {
   d.severity = DiagnosticSeverity::Note;
   d.category = DiagnosticCategory::InstructionMix;
   d.functionName = fnName;
-  d.evidence = "arithmetic=" + std::to_string(arithmetic) +
-               " memory=" + std::to_string(memory) +
-               " branch/cmp=" + std::to_string(branch) +
-               " calls=" + std::to_string(calls) + " other=" + std::to_string(other);
-
   float memRatio = (float)memory / total;
   float arithRatio = (float)arithmetic / total;
   float ctrlRatio = (float)branch / total;
 
   if (memRatio >= 0.35f) {
     d.message = "Function appears memory-heavy (high load/store density).";
+    d.evidence = "arithmetic=" + std::to_string(arithmetic) + ", memory=" +
+                 std::to_string(memory) + ", compare/branch=" + std::to_string(branch) +
+                 ", calls=" + std::to_string(calls) + " (high memory intensity).";
     d.suggestions.push_back("Consider improving locality or reducing memory traffic.");
   } else if (arithRatio >= 0.4f) {
     d.message = "Function appears compute-heavy (high arithmetic density).";
+    d.evidence = "arithmetic=" + std::to_string(arithmetic) + ", memory=" +
+                 std::to_string(memory) + ", compare/branch=" + std::to_string(branch) +
+                 " (high arithmetic intensity).";
     d.suggestions.push_back("Good candidate for vectorization or parallelization.");
   } else if (ctrlRatio >= 0.2f) {
     d.message = "Function has significant control flow (branches/cmp).";
+    d.evidence = "arithmetic=" + std::to_string(arithmetic) + ", memory=" +
+                 std::to_string(memory) + ", compare/branch=" + std::to_string(branch) +
+                 " (significant control flow).";
     d.suggestions.push_back("Simplifying control flow may help vectorization.");
   } else {
     d.message = "Mixed instruction mix; review loop and memory patterns.";
+    d.evidence = "arithmetic=" + std::to_string(arithmetic) + ", memory=" +
+                 std::to_string(memory) + ", compare/branch=" + std::to_string(branch) +
+                 ", calls=" + std::to_string(calls) + ".";
   }
   d.confidence = 0.6f;
   ctx.getEmitter().add(d);

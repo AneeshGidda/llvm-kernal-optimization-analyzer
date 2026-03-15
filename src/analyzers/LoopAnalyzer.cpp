@@ -2,6 +2,7 @@
 
 #include "analyzer/AnalysisContext.h"
 #include "analyzer/Diagnostic.h"
+#include "analyzer/LoopContext.h"
 #include "analyzer/LoopSummary.h"
 
 #include <llvm/Analysis/LoopInfo.h>
@@ -10,6 +11,7 @@
 #include <llvm/IR/Instructions.h>
 
 #include <functional>
+#include <utility>
 
 namespace analyzer {
 
@@ -19,7 +21,9 @@ void summarizeLoop(llvm::Loop* L, unsigned depth, unsigned index,
                    LoopSummary& out) {
   out.depth = depth;
   out.loopIndex = index;
-  out.headerBlockName = L->getHeader()->getName().str();
+  llvm::StringRef nameRef = L->getHeader()->getName();
+  out.headerBlockName = nameRef.empty() ? "unnamed." + std::to_string(index)
+                                        : nameRef.str();
   out.blockCount = 0;
   out.instructionCount = 0;
   out.memoryOpCount = 0;
@@ -44,14 +48,17 @@ void summarizeLoop(llvm::Loop* L, unsigned depth, unsigned index,
 void LoopAnalyzer::run(llvm::Function& F, AnalysisContext& ctx) {
   llvm::DominatorTree DT(F);
   llvm::LoopInfo LI(DT);
+  std::string fnName = F.getName().str();
 
-  std::vector<LoopSummary> summaries;
+  std::vector<std::pair<LoopSummary, LoopContext>> summaries;
   unsigned index = 0;
   std::function<void(llvm::Loop*, unsigned)> collect =
       [&](llvm::Loop* L, unsigned depth) {
         LoopSummary s;
-        summarizeLoop(L, depth, index++, s);
-        summaries.push_back(s);
+        summarizeLoop(L, depth, index, s);
+        LoopContext lctx = buildLoopContext(L, fnName, index);
+        summaries.push_back({s, lctx});
+        ++index;
         for (llvm::Loop* sub : L->getSubLoops())
           collect(sub, depth + 1);
       };
@@ -60,11 +67,9 @@ void LoopAnalyzer::run(llvm::Function& F, AnalysisContext& ctx) {
   }
 
   unsigned maxDepth = 0;
-  for (const auto& s : summaries)
-    if (s.depth > maxDepth)
-      maxDepth = s.depth;
-
-  std::string fnName = F.getName().str();
+  for (const auto& p : summaries)
+    if (p.first.depth > maxDepth)
+      maxDepth = p.first.depth;
 
   if (!summaries.empty()) {
     Diagnostic d;
@@ -73,7 +78,13 @@ void LoopAnalyzer::run(llvm::Function& F, AnalysisContext& ctx) {
     d.functionName = fnName;
     d.message = "Function has " + std::to_string(summaries.size()) +
                 " loop(s), max nesting depth " + std::to_string(maxDepth) + ".";
-    d.evidence = "LoopInfo analysis.";
+    std::string headerList;
+    for (size_t i = 0; i < summaries.size(); ++i) {
+      if (i) headerList += ", ";
+      headerList += "%" + summaries[i].second.headerBlockName;
+    }
+    d.evidence = std::to_string(summaries.size()) + " loops in preorder, max depth " +
+                 std::to_string(maxDepth) + "; headers: " + headerList + ".";
     d.confidence = 1.0f;
     ctx.getEmitter().add(d);
   }
@@ -81,60 +92,66 @@ void LoopAnalyzer::run(llvm::Function& F, AnalysisContext& ctx) {
   if (summaries.empty())
     return;
 
-  LoopSummary* deepest = &summaries[0];
-  LoopSummary* mostMemory = &summaries[0];
-  LoopSummary* mostArith = &summaries[0];
-  for (auto& s : summaries) {
-    if (s.depth > deepest->depth)
-      deepest = &s;
-    if (s.memoryOpCount > mostMemory->memoryOpCount)
-      mostMemory = &s;
-    if (s.arithmeticCount > mostArith->arithmeticCount)
-      mostArith = &s;
+  size_t idxDeepest = 0, idxMostMemory = 0, idxMostArith = 0;
+  for (size_t i = 1; i < summaries.size(); ++i) {
+    const auto& s = summaries[i].first;
+    if (s.depth > summaries[idxDeepest].first.depth) idxDeepest = i;
+    if (s.memoryOpCount > summaries[idxMostMemory].first.memoryOpCount)
+      idxMostMemory = i;
+    if (s.arithmeticCount > summaries[idxMostArith].first.arithmeticCount)
+      idxMostArith = i;
   }
 
-  if (deepest->depth >= 1) {
+  const auto& deepest = summaries[idxDeepest].first;
+  const auto& lctxDeepest = summaries[idxDeepest].second;
+  {
     Diagnostic d;
     d.severity = DiagnosticSeverity::Note;
     d.category = DiagnosticCategory::Loop;
     d.functionName = fnName;
-    d.loopOrRegionContext = "loop depth " + std::to_string(deepest->depth);
-    d.message = "Deepest loop (depth " + std::to_string(deepest->depth) +
+    d.loopOrRegionContext = formatLoopContext(lctxDeepest);
+    d.message = "Deepest loop (depth " + std::to_string(deepest.depth) +
                 ") is an analysis hotspot.";
-    d.evidence = "Block " + deepest->headerBlockName + ", " +
-                 std::to_string(deepest->instructionCount) + " instructions.";
+    d.evidence = "Loop at header %" + deepest.headerBlockName + " has " +
+                 std::to_string(deepest.instructionCount) + " instructions, " +
+                 std::to_string(deepest.memoryOpCount) + " memory ops; depth " +
+                 std::to_string(lctxDeepest.depth) +
+                 ", innermost=" + (lctxDeepest.innermost ? "true" : "false") + ".";
     d.suggestions.push_back("Consider tiling or fusion for this loop.");
     d.confidence = 0.8f;
     ctx.getEmitter().add(d);
   }
 
-  if (mostMemory->memoryOpCount > 4 &&
-      mostMemory->instructionCount > 0 &&
-      (float)mostMemory->memoryOpCount / mostMemory->instructionCount > 0.3f) {
+  const auto& mostMemory = summaries[idxMostMemory].first;
+  const auto& lctxMem = summaries[idxMostMemory].second;
+  if (mostMemory.memoryOpCount > 4 && mostMemory.instructionCount > 0 &&
+      (float)mostMemory.memoryOpCount / mostMemory.instructionCount > 0.3f) {
     Diagnostic d;
     d.severity = DiagnosticSeverity::Warning;
     d.category = DiagnosticCategory::Loop;
     d.functionName = fnName;
-    d.loopOrRegionContext = "loop with high memory density";
+    d.loopOrRegionContext = formatLoopContext(lctxMem);
     d.message = "Loop has high memory op density; may be memory-bound.";
-    d.evidence = std::to_string(mostMemory->memoryOpCount) + " memory ops, " +
-                 std::to_string(mostMemory->instructionCount) + " total instructions.";
+    d.evidence = std::to_string(mostMemory.memoryOpCount) + " memory ops, " +
+                 std::to_string(mostMemory.instructionCount) +
+                 " total instructions in loop body.";
     d.suggestions.push_back("Consider loop tiling to improve reuse.");
     d.suggestions.push_back("Review data layout for contiguous access.");
     d.confidence = 0.6f;
     ctx.getEmitter().add(d);
   }
 
-  if (mostArith->arithmeticCount > 8 &&
-      mostArith->instructionCount > 0 &&
-      (float)mostArith->arithmeticCount / mostArith->instructionCount > 0.4f) {
+  const auto& mostArith = summaries[idxMostArith].first;
+  const auto& lctxArith = summaries[idxMostArith].second;
+  if (mostArith.arithmeticCount > 8 && mostArith.instructionCount > 0 &&
+      (float)mostArith.arithmeticCount / mostArith.instructionCount > 0.4f) {
     Diagnostic d;
     d.severity = DiagnosticSeverity::Note;
     d.category = DiagnosticCategory::Loop;
     d.functionName = fnName;
-    d.loopOrRegionContext = "loop with high arithmetic intensity";
+    d.loopOrRegionContext = formatLoopContext(lctxArith);
     d.message = "Loop has high arithmetic intensity; compute-bound candidate.";
-    d.evidence = std::to_string(mostArith->arithmeticCount) + " arithmetic ops.";
+    d.evidence = std::to_string(mostArith.arithmeticCount) + " arithmetic ops in loop body.";
     d.suggestions.push_back("Good candidate for vectorization or unrolling.");
     d.confidence = 0.6f;
     ctx.getEmitter().add(d);
