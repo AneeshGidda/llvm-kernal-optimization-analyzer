@@ -38,6 +38,7 @@ add_executable(analyzer
   src/main.cpp
   src/cli/CommandLine.cpp
   src/core/IRLoader.cpp
+  src/core/LoopContext.cpp
   src/core/FunctionInfo.cpp
   src/core/AnalysisContext.cpp
   src/core/KernelClassifier.cpp
