@@ -1,0 +1,50 @@
+--- !Analysis
+Pass:            loop-vectorize
+Name:            UnsafeDep
+DebugLoc:        { File: overlap.c, Line: 4, Column: 14 }
+Function:        self_dep
+Args:
+  - String:          'loop not vectorized: '
+  - String:          'unsafe dependent memory operations in loop. Use #pragma loop distribute(enable) to allow loop distribution to attempt to isolate the offending operations into a separate loop'
+  - String:          "\nUnknown data dependence."
+  - String:          ' Memory location is the same as accessed at '
+  - Location:        'overlap.c:4:16'
+    DebugLoc:        { File: overlap.c, Line: 4, Column: 16 }
+...
+--- !Missed
+Pass:            loop-vectorize
+Name:            MissedDetails
+DebugLoc:        { File: overlap.c, Line: 3, Column: 3 }
+Function:        self_dep
+Args:
+  - String:          loop not vectorized
+...
+--- !Analysis
+Pass:            loop-vectorize
+Name:            CantIdentifyArrayBounds
+DebugLoc:        { File: overlap.c, Line: 10, Column: 5 }
+Function:        histogram
+Args:
+  - String:          'loop not vectorized: '
+  - String:          cannot identify array bounds
+...
+--- !Missed
+Pass:            loop-vectorize
+Name:            MissedDetails
+DebugLoc:        { File: overlap.c, Line: 9, Column: 3 }
+Function:        histogram
+Args:
+  - String:          loop not vectorized
+...
+--- !Passed
+Pass:            loop-vectorize
+Name:            Vectorized
+DebugLoc:        { File: overlap.c, Line: 16, Column: 5 }
+Function:        stencil_rows
+Args:
+  - String:          'vectorized loop (vectorization width: '
+  - VectorizationFactor: '4'
+  - String:          ', interleaved count: '
+  - InterleaveCount: '2'
+  - String:          ')'
+...

@@ -1,0 +1,30 @@
+--- !Analysis
+Pass:            loop-vectorize
+Name:            VectorizationNotBeneficial
+DebugLoc:        { File: reduction.c, Line: 4, Column: 3 }
+Function:        sum_f32
+Args:
+  - String:          the cost-model indicates that vectorization is not beneficial
+...
+--- !Passed
+Pass:            loop-vectorize
+Name:            Interleaved
+DebugLoc:        { File: reduction.c, Line: 4, Column: 3 }
+Function:        sum_f32
+Args:
+  - String:          'interleaved loop (interleaved count: '
+  - InterleaveCount: '2'
+  - String:          ')'
+...
+--- !Passed
+Pass:            loop-vectorize
+Name:            Vectorized
+DebugLoc:        { File: reduction.c, Line: 12, Column: 3 }
+Function:        sum_i32
+Args:
+  - String:          'vectorized loop (vectorization width: '
+  - VectorizationFactor: '4'
+  - String:          ', interleaved count: '
+  - InterleaveCount: '2'
+  - String:          ')'
+...

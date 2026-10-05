@@ -1,0 +1,17 @@
+--- !Analysis
+Pass:            loop-vectorize
+Name:            CantIdentifyArrayBounds
+DebugLoc:        { File: gather.c, Line: 4, Column: 12 }
+Function:        gather
+Args:
+  - String:          'loop not vectorized: '
+  - String:          cannot identify array bounds
+...
+--- !Missed
+Pass:            loop-vectorize
+Name:            MissedDetails
+DebugLoc:        { File: gather.c, Line: 3, Column: 3 }
+Function:        gather
+Args:
+  - String:          loop not vectorized
+...

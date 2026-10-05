@@ -1,0 +1,17 @@
+--- !Analysis
+Pass:            loop-vectorize
+Name:            NonReductionValueUsedOutsideLoop
+DebugLoc:        { File: recurrence.c, Line: 4, Column: 12 }
+Function:        prefix_sum
+Args:
+  - String:          'loop not vectorized: '
+  - String:          value that could not be identified as reduction is used outside the loop
+...
+--- !Missed
+Pass:            loop-vectorize
+Name:            MissedDetails
+DebugLoc:        { File: recurrence.c, Line: 3, Column: 3 }
+Function:        prefix_sum
+Args:
+  - String:          loop not vectorized
+...

@@ -1,0 +1,18 @@
+--- !Analysis
+Pass:            loop-vectorize
+Name:            VectorizationNotBeneficial
+DebugLoc:        { File: interleave_only.c, Line: 7, Column: 5 }
+Function:        colwalk_const
+Args:
+  - String:          the cost-model indicates that vectorization is not beneficial
+...
+--- !Passed
+Pass:            loop-vectorize
+Name:            Interleaved
+DebugLoc:        { File: interleave_only.c, Line: 7, Column: 5 }
+Function:        colwalk_const
+Args:
+  - String:          'interleaved loop (interleaved count: '
+  - InterleaveCount: '2'
+  - String:          ')'
+...

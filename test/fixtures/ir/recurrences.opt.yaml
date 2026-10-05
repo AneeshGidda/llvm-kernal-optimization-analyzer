@@ -1,0 +1,34 @@
+--- !Analysis
+Pass:            loop-vectorize
+Name:            NonReductionValueUsedOutsideLoop
+DebugLoc:        { File: recurrences.c, Line: 4, Column: 16 }
+Function:        shift_add
+Args:
+  - String:          'loop not vectorized: '
+  - String:          value that could not be identified as reduction is used outside the loop
+...
+--- !Missed
+Pass:            loop-vectorize
+Name:            MissedDetails
+DebugLoc:        { File: recurrences.c, Line: 3, Column: 3 }
+Function:        shift_add
+Args:
+  - String:          loop not vectorized
+...
+--- !Analysis
+Pass:            loop-vectorize
+Name:            NonReductionValueUsedOutsideLoop
+DebugLoc:        { File: recurrences.c, Line: 11, Column: 3 }
+Function:        argmax
+Args:
+  - String:          'loop not vectorized: '
+  - String:          value that could not be identified as reduction is used outside the loop
+...
+--- !Missed
+Pass:            loop-vectorize
+Name:            MissedDetails
+DebugLoc:        { File: recurrences.c, Line: 11, Column: 3 }
+Function:        argmax
+Args:
+  - String:          loop not vectorized
+...

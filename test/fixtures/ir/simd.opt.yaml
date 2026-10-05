@@ -1,0 +1,55 @@
+--- !Analysis
+Pass:            loop-vectorize
+Name:            CantVectorizeInstructionReturnType
+DebugLoc:        { File: simd.c, Line: 6, Column: 5 }
+Function:        add_neon
+Args:
+  - String:          'loop not vectorized: '
+  - String:          instruction return type cannot be vectorized
+...
+--- !Missed
+Pass:            loop-vectorize
+Name:            MissedDetails
+DebugLoc:        { File: simd.c, Line: 5, Column: 3 }
+Function:        add_neon
+Args:
+  - String:          loop not vectorized
+...
+--- !Analysis
+Pass:            loop-vectorize
+Name:            VectorizationNotBeneficial
+DebugLoc:        { File: simd.c, Line: 13, Column: 3 }
+Function:        scale_disabled
+Args:
+  - String:          the cost-model indicates that vectorization is not beneficial
+...
+--- !Passed
+Pass:            loop-vectorize
+Name:            Interleaved
+DebugLoc:        { File: simd.c, Line: 13, Column: 3 }
+Function:        scale_disabled
+Args:
+  - String:          'interleaved loop (interleaved count: '
+  - InterleaveCount: '2'
+  - String:          ')'
+...
+--- !Analysis
+Pass:            loop-vectorize
+Name:            InterleavingNotBeneficial
+DebugLoc:        { File: simd.c, Line: 21, Column: 5 }
+Function:        rows
+Args:
+  - String:          the cost-model indicates that interleaving is not beneficial
+...
+--- !Passed
+Pass:            loop-vectorize
+Name:            Vectorized
+DebugLoc:        { File: simd.c, Line: 21, Column: 5 }
+Function:        rows
+Args:
+  - String:          'vectorized loop (vectorization width: '
+  - VectorizationFactor: '4'
+  - String:          ', interleaved count: '
+  - InterleaveCount: '1'
+  - String:          ')'
+...

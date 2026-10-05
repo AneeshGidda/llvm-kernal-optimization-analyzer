@@ -1,0 +1,8 @@
+--- !Analysis
+Pass:            loop-vectorize
+Name:            AllDisabled
+DebugLoc:        { File: interchange_illegal.c, Line: 8, Column: 5 }
+Function:        skew
+Args:
+  - String:          'loop not vectorized: vectorization and interleaving are explicitly disabled, or the loop has already been vectorized'
+...

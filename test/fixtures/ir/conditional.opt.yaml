@@ -1,0 +1,54 @@
+--- !Passed
+Pass:            loop-vectorize
+Name:            Vectorized
+DebugLoc:        { File: conditional.c, Line: 4, Column: 3 }
+Function:        last_positive
+Args:
+  - String:          'vectorized loop (vectorization width: '
+  - VectorizationFactor: '2'
+  - String:          ', interleaved count: '
+  - InterleaveCount: '2'
+  - String:          ')'
+...
+--- !Missed
+Pass:            loop-vectorize
+Name:            VectorizationNotBeneficial
+DebugLoc:        { File: conditional.c, Line: 9, Column: 3 }
+Function:        add_bias
+Args:
+  - String:          the cost-model indicates that vectorization is not beneficial
+...
+--- !Missed
+Pass:            loop-vectorize
+Name:            InterleavingNotBeneficial
+DebugLoc:        { File: conditional.c, Line: 9, Column: 3 }
+Function:        add_bias
+Args:
+  - String:          the cost-model indicates that interleaving is not beneficial
+...
+--- !Analysis
+Pass:            loop-vectorize
+Name:            CantVectorizeLibcall
+DebugLoc:        { File: conditional.c, Line: 19, Column: 17 }
+Function:        count
+Args:
+  - String:          'loop not vectorized: '
+  - String:          call instruction cannot be vectorized
+...
+--- !Analysis
+Pass:            loop-vectorize
+Name:            CantVectorizeInstruction
+DebugLoc:        { File: conditional.c, Line: 18, Column: 3 }
+Function:        count
+Args:
+  - String:          'loop not vectorized: '
+  - String:          instruction cannot be vectorized
+...
+--- !Missed
+Pass:            loop-vectorize
+Name:            MissedDetails
+DebugLoc:        { File: conditional.c, Line: 18, Column: 3 }
+Function:        count
+Args:
+  - String:          loop not vectorized
+...

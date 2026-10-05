@@ -1,0 +1,16 @@
+--- !Missed
+Pass:            loop-vectorize
+Name:            VectorizationNotBeneficial
+DebugLoc:        { File: matmul.c, Line: 8, Column: 7 }
+Function:        matmul
+Args:
+  - String:          the cost-model indicates that vectorization is not beneficial
+...
+--- !Missed
+Pass:            loop-vectorize
+Name:            InterleavingNotBeneficial
+DebugLoc:        { File: matmul.c, Line: 8, Column: 7 }
+Function:        matmul
+Args:
+  - String:          the cost-model indicates that interleaving is not beneficial
+...

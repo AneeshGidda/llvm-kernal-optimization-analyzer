@@ -1,0 +1,26 @@
+--- !Analysis
+Pass:            loop-vectorize
+Name:            NoCFGForSelect
+DebugLoc:        { File: volatile.c, Line: 5, Column: 7 }
+Function:        cond_volatile
+Args:
+  - String:          'loop not vectorized: '
+  - String:          control flow cannot be substituted for a select
+...
+--- !Analysis
+Pass:            loop-vectorize
+Name:            CantVectorizeInstruction
+DebugLoc:        { File: volatile.c, Line: 3, Column: 3 }
+Function:        cond_volatile
+Args:
+  - String:          'loop not vectorized: '
+  - String:          instruction cannot be vectorized
+...
+--- !Missed
+Pass:            loop-vectorize
+Name:            MissedDetails
+DebugLoc:        { File: volatile.c, Line: 3, Column: 3 }
+Function:        cond_volatile
+Args:
+  - String:          loop not vectorized
+...

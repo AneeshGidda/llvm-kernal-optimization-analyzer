@@ -1,0 +1,46 @@
+--- !Analysis
+Pass:            loop-vectorize
+Name:            InterleavingNotBeneficial
+DebugLoc:        { File: calls.c, Line: 7, Column: 3 }
+Function:        apply_sin
+Args:
+  - String:          the cost-model indicates that interleaving is not beneficial
+...
+--- !Passed
+Pass:            loop-vectorize
+Name:            Vectorized
+DebugLoc:        { File: calls.c, Line: 7, Column: 3 }
+Function:        apply_sin
+Args:
+  - String:          'vectorized loop (vectorization width: '
+  - VectorizationFactor: '2'
+  - String:          ', interleaved count: '
+  - InterleaveCount: '1'
+  - String:          ')'
+...
+--- !Analysis
+Pass:            loop-vectorize
+Name:            CantVectorizeLibcall
+DebugLoc:        { File: calls.c, Line: 14, Column: 12 }
+Function:        apply_transform
+Args:
+  - String:          'loop not vectorized: '
+  - String:          call instruction cannot be vectorized
+...
+--- !Analysis
+Pass:            loop-vectorize
+Name:            CantVectorizeInstruction
+DebugLoc:        { File: calls.c, Line: 13, Column: 3 }
+Function:        apply_transform
+Args:
+  - String:          'loop not vectorized: '
+  - String:          instruction cannot be vectorized
+...
+--- !Missed
+Pass:            loop-vectorize
+Name:            MissedDetails
+DebugLoc:        { File: calls.c, Line: 13, Column: 3 }
+Function:        apply_transform
+Args:
+  - String:          loop not vectorized
+...

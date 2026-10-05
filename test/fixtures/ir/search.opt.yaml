@@ -1,0 +1,17 @@
+--- !Analysis
+Pass:            loop-vectorize
+Name:            CantComputeNumberOfIterations
+DebugLoc:        { File: search.c, Line: 3, Column: 3 }
+Function:        find_first
+Args:
+  - String:          'loop not vectorized: '
+  - String:          could not determine number of loop iterations
+...
+--- !Missed
+Pass:            loop-vectorize
+Name:            MissedDetails
+DebugLoc:        { File: search.c, Line: 3, Column: 3 }
+Function:        find_first
+Args:
+  - String:          loop not vectorized
+...

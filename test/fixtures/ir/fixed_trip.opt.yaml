@@ -1,0 +1,18 @@
+--- !Analysis
+Pass:            loop-vectorize
+Name:            VectorizationNotBeneficial
+DebugLoc:        { File: fixed_trip.c, Line: 5, Column: 3 }
+Function:        sum1003
+Args:
+  - String:          the cost-model indicates that vectorization is not beneficial
+...
+--- !Passed
+Pass:            loop-vectorize
+Name:            Interleaved
+DebugLoc:        { File: fixed_trip.c, Line: 5, Column: 3 }
+Function:        sum1003
+Args:
+  - String:          'interleaved loop (interleaved count: '
+  - InterleaveCount: '2'
+  - String:          ')'
+...

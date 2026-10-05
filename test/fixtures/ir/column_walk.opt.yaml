@@ -1,0 +1,18 @@
+--- !Analysis
+Pass:            loop-vectorize
+Name:            VectorizationNotBeneficial
+DebugLoc:        { File: column_walk.c, Line: 5, Column: 5 }
+Function:        scale_columns
+Args:
+  - String:          the cost-model indicates that vectorization is not beneficial
+...
+--- !Passed
+Pass:            loop-vectorize
+Name:            Interleaved
+DebugLoc:        { File: column_walk.c, Line: 5, Column: 5 }
+Function:        scale_columns
+Args:
+  - String:          'interleaved loop (interleaved count: '
+  - InterleaveCount: '2'
+  - String:          ')'
+...
