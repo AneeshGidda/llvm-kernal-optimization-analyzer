@@ -22,43 +22,26 @@ static int severityOrder(DiagnosticSeverity s) {
   return 3;
 }
 
-static std::string categoryKey(DiagnosticCategory c) {
-  switch (c) {
-    case DiagnosticCategory::Loop:
-      return "Loop";
-    case DiagnosticCategory::Memory:
-      return "Memory";
-    case DiagnosticCategory::Vectorization:
-      return "Vectorization";
-    case DiagnosticCategory::InstructionMix:
-      return "InstructionMix";
-    case DiagnosticCategory::RedundantLoad:
-      return "RedundantLoad";
-    case DiagnosticCategory::Simplification:
-      return "Simplification";
-    case DiagnosticCategory::General:
-      return "General";
-  }
-  return "?";
-}
-
-std::vector<Diagnostic> DiagnosticEmitter::getDiagnosticsForReport(
-    bool /*verbose*/) const {
+std::vector<Diagnostic> DiagnosticEmitter::getDiagnosticsForReport() const {
   std::set<std::string> seen;
   std::vector<Diagnostic> out;
   for (const auto& d : diagnostics_) {
-    std::string key = d.functionName + "\n" + categoryKey(d.category) + "\n" +
-                      d.message + "\n" + d.loopOrRegionContext;
-    if (seen.count(key))
+    std::string key = d.functionName + "\n" + d.loop + "\n" + d.message;
+    if (!seen.insert(key).second)
       continue;
-    seen.insert(key);
     out.push_back(d);
   }
-  std::sort(out.begin(), out.end(), [](const Diagnostic& a, const Diagnostic& b) {
-    if (severityOrder(a.severity) != severityOrder(b.severity))
-      return severityOrder(a.severity) < severityOrder(b.severity);
-    return categoryKey(a.category) < categoryKey(b.category);
-  });
+  // Function-level diagnostics (no loop) first, then loops in source order.
+  std::stable_sort(
+      out.begin(), out.end(), [](const Diagnostic& a, const Diagnostic& b) {
+        if (a.functionName != b.functionName)
+          return a.functionName < b.functionName;
+        if (a.loop.empty() != b.loop.empty())
+          return a.loop.empty();
+        if (a.loopOrder != b.loopOrder)
+          return a.loopOrder < b.loopOrder;
+        return severityOrder(a.severity) < severityOrder(b.severity);
+      });
   return out;
 }
 

@@ -7,19 +7,15 @@
 
 namespace analyzer {
 
-/// Collects diagnostics from analyzers and supports
-/// deduplication/prioritization.
+/// Collects diagnostics from analyzers.
 class DiagnosticEmitter {
 public:
   void add(Diagnostic d);
   const std::vector<Diagnostic>& getDiagnostics() const {
     return diagnostics_;
   }
-  /// Deduplicate and sort by severity then category; use for reporting.
-  std::vector<Diagnostic> getDiagnosticsForReport(bool verbose) const;
-  void clear() {
-    diagnostics_.clear();
-  }
+  /// Deduplicated diagnostics in report order: function, loop, severity.
+  std::vector<Diagnostic> getDiagnosticsForReport() const;
 
 private:
   std::vector<Diagnostic> diagnostics_;

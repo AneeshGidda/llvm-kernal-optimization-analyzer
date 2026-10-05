@@ -6,27 +6,38 @@
 
 namespace analyzer {
 
+/// Warning: the compiler missed an optimization and we can name why.
+/// Note: informational (e.g. "this loop was vectorized").
 enum class DiagnosticSeverity { Note, Warning, Error };
+
+/// Coalescing, SharedMemory and Divergence are GPU findings.
 enum class DiagnosticCategory {
-  Loop,
-  Memory,
   Vectorization,
-  InstructionMix,
-  RedundantLoad,
-  Simplification,
-  General
+  Memory,
+  Coalescing,
+  SharedMemory,
+  Divergence,
+  General,
 };
 
 struct Diagnostic {
-  DiagnosticSeverity severity = DiagnosticSeverity::Warning;
+  DiagnosticSeverity severity = DiagnosticSeverity::Note;
   DiagnosticCategory category = DiagnosticCategory::General;
-  std::string message;
   std::string functionName;
-  std::string loopOrRegionContext;
-  std::string evidence;
+  /// Human description of the loop, e.g. "loop at matmul.c:8 (depth 3)".
+  /// Empty for function-level diagnostics.
+  std::string loop;
+  /// Preorder position of the loop in its function; keeps report order stable.
+  unsigned loopOrder = 0;
+  /// One-line finding.
+  std::string message;
+  /// Facts that support the finding, one per line.
+  std::vector<std::string> evidence;
+  /// Concrete source-level changes that address the finding.
   std::vector<std::string> suggestions;
-  /// 0.0 = heuristic, 1.0 = high confidence
-  float confidence = 0.5f;
+  /// Which LLVM analysis established the finding (instead of a made-up
+  /// confidence score), e.g. "LLVM LoopVectorize (rerun on this IR)".
+  std::string basis;
 };
 
 }  // namespace analyzer
