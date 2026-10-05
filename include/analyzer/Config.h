@@ -5,16 +5,18 @@
 
 namespace analyzer {
 
-/// Global configuration for analysis thresholds and behavior.
+/// Command-line options for one run.
 struct Config {
-  /// If true, analyze all functions; otherwise only kernel-like candidates.
-  bool analyzeAllFunctions = false;
-  /// Emit verbose diagnostics.
+  /// Also print informational notes (access patterns) and the LLVM analysis
+  /// behind each finding.
   bool verbose = false;
   /// Emit JSON instead of human-readable report.
   bool jsonOutput = false;
-  /// Optional function name filter (empty = no filter).
+  /// Optional function name filter (empty = every function with loops).
   std::string functionFilter;
+  /// clang's optimization record for the same compile
+  /// (-fsave-optimization-record); gives the vectorizer's real decisions.
+  std::string remarksPath;
 };
 
 }  // namespace analyzer
